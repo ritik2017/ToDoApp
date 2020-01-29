@@ -1,5 +1,6 @@
 let express = require('express')
 let mongodb = require('mongodb')
+let sanitize_html = require('sanitize-html')
 
 let ourApp = express()
 let db
@@ -22,8 +23,7 @@ ourApp.use(express.urlencoded({extended: false}))
 
 function passwordProtected(req,res,next){
   res.set('WWW-Authenticate', 'Basic realm="Simple ToDo App"')
-  console.log(req.headers.authorization)
-  if(req.headers.authorization == "Basic dG9kb3VzZXI6dG9kb3VzZXI="){
+  if(req.headers.authorization == "Basic dG9kb2FwcDp0b2RvYXBw"){
     next()
   }
   else {
@@ -70,13 +70,15 @@ ourApp.get('/', passwordProtected, function(req,res) {
 })
 
 ourApp.post('/create-item',function(req,res){
-    db.collection('todolist').insertOne({text: req.body.userText}, function(err,info ){
+    let safeText = sanitize_html(req.body.userText, {allowedTags: [], allowedAttributes: {}})
+    db.collection('todolist').insertOne({text: safeText}, function(err,info ){
         res.json(info.ops[0])
     })
 })
 
 ourApp.post('/update-item', function(req,res) {
-  db.collection('todolist').findOneAndUpdate({_id: new mongodb.ObjectId(req.body.id)}, {$set: {text: req.body.userText}}, function(){
+  let safeText = sanitize_html(req.body.userText, {allowedTags: [], allowedAttributes: {}})
+  db.collection('todolist').findOneAndUpdate({_id: new mongodb.ObjectId(req.body.id)}, {$set: {text: safeText}}, function(){
     res.send("Success")
   })
 })
