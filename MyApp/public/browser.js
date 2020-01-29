@@ -8,6 +8,12 @@ function itemTemplate(item){
   </li>`
 }
 
+ourHTML = items.map(function(item){
+    return itemTemplate(item)
+}).join('')
+// Initial Page Load Render
+document.getElementById("item_list").insertAdjacentHTML("beforeend", ourHTML)
+
 //Create Feature
 let createField = document.getElementById("create_field")
 document.getElementById("create_form").addEventListener("submit", function(e){
